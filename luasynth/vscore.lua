@@ -20,11 +20,7 @@ end
 
 function VSCore:__index(plugin_name)
   if VSCore[plugin_name] then return VSCore[plugin_name] end
-  local plugin = vs.getPluginNs(plugin_name, self)
-  if plugin == nil then
-    error('Plugin with namespace "' .. plugin_name .. '" not found', 2)
-  end
-  return plugin
+  return vs.getPluginNs(plugin_name, self)
 end
 
 function VSCore:__tostring()

@@ -10,8 +10,6 @@ function VSPlugin:__index(fn_name)
       return Function(sig, self)
     end
   end
-
-  error('There is no function named ' .. fn_name)
 end
 
 function VSPlugin:__tostring()
