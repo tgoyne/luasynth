@@ -5,9 +5,7 @@ local function map_getter(fn)
   local err = ffi.new("int[1]")
   return function(self, key, index)
     local ret = fn(self, key, (index or 1) - 1, err)
-    if err[0] ~= 0 then
-      error('TODO: prop read err message')
-    end
+    if err[0] ~= 0 then return end
     return ret
   end
 end
