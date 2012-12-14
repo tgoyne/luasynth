@@ -5,12 +5,9 @@ local vs = require "luasynth.vsapi"
 local VSPlugin = {}
 
 function VSPlugin:__index(fn_name)
-  local functions = vs.getFunctions(self)
-  for i = 1, #functions do
-    local fn = functions[i]
+  for fn, sig in vs.getFunctions(self):iter() do
     if fn_name == ffi.string(fn) then
-      local signature = functions:string(fn)
-      return Function(signature, self)
+      return Function(sig, self)
     end
   end
 
@@ -18,10 +15,9 @@ function VSPlugin:__index(fn_name)
 end
 
 function VSPlugin:__tostring()
-  local functions = vs.getFunctions(self)
   local ret = ""
-  for i = 1, #functions do
-    ret = ret .. tostring(Function(functions:string(functions[i]), self))
+  for _, fn in vs.getFunctions(self):iter() do
+    ret = ret .. tostring(Function(fn, self))
   end
   return ret
 end

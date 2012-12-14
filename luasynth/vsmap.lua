@@ -41,7 +41,7 @@ function VSMap:__gc() vs.freeMap(self) end
 function VSMap:__len() return vs.propNumKeys(self) end
 
 function VSMap:numKeys()        return vs.propNumKeys(self) end
-function VSMap:key(index)       return vs.propGetKey(self, index) end
+function VSMap:key(index)       return vs.propGetKey(self, index - 1) end
 function VSMap:numElements(key) return vs.propNumElements(self, key) end
 function VSMap:deleteKey(key)   return vs.propDeleteKey(self, key) end
 
@@ -125,6 +125,17 @@ function VSMap:__tostring()
     ret = string.format("%s\t%s (%s): %s\n", ret, ffi.string(self[i]), self:type(self[i]), self:value(self[i]))
   end
   return ret
+end
+
+function VSMap:iter()
+  local i = 0
+  local len = #self
+  return function()
+    i = i + 1
+    if i > len then return end
+    local key = self:key(i)
+    return key, self:value(key)
+  end
 end
 
 ffi.metatype("VSMap", VSMap)

@@ -29,10 +29,8 @@ end
 
 function VSCore:__tostring()
   local ret = ""
-  local plugins = vs.getPlugins(self)
-  for i = 1, #plugins do
-    local plugin = plugins:string(plugins[i])
-    namespace, identifier, description = plugin:match("(.*);(.*);(.*)")
+  for _, plugin in vs.getPlugins(self):iter() do
+    local namespace, identifier, description = plugin:match("(.*);(.*);(.*)")
     ret = string.format("%s%s\n\tnamespace:  %s\n\tidentifier: %s\n", ret, description, namespace, identifier)
     ret = ret .. tostring(vs.getPluginId(identifier, self))
   end
@@ -40,16 +38,12 @@ function VSCore:__tostring()
 end
 
 function VSCore:findFunction(fn_name)
-  local plugins = vs.getPlugins(self)
-  for i = 1, #plugins do
-    local plugin_str = plugins:string(plugins[i])
-    identifier = plugin_str:match(".*;(.*);.*")
+  for _, plugin_str in vs.getPlugins(self):iter() do
+    local identifier = plugin_str:match(".*;(.*);.*")
     local plugin = vs.getPluginId(identifier, self)
-    local functions = vs.getFunctions(plugin)
-    for i = 1, #functions do
-      local fn = functions[i]
-      if fn_name == ffi.string(fn) then
-        return Function(functions:string(fn), plugin)
+    for name, fn in vs.getFunctions(plugin):iter() do
+      if fn_name == ffi.string(name) then
+        return Function(fn, plugin)
       end
     end
   end
