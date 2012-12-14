@@ -1,13 +1,6 @@
 local ffi = require "ffi"
 
-local vapoursynth_h = ""
-for line in io.lines("VapourSynth.h") do
-  -- ffi doesn't support the C preprocessor yet, so preprocess it manually
-  if not line:match("^%s*#") then
-    vapoursynth_h = vapoursynth_h .. line:gsub("VS_CC ", ""):gsub("VS_API%(([^)]+)%)", "%1") .. "\n"
-  end
-end
-
+local vapoursynth_h = require "luasynth.vapoursynth"
 ffi.cdef(vapoursynth_h)
 
 local vs = ffi.load "vapoursynth"
