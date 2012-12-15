@@ -84,4 +84,13 @@ function Function:__call(...)
   return #ret > 0 and ret:value(ret[1])
 end
 
+function Function:unpack(map)
+  local ret = {}
+  for arg in self.args:gmatch("[^;]+") do
+    local name, ty = arg:match("([^:]+):([^:]+):?.*")
+    ret[#ret + 1] = ty:sub(-2) == "[]" and map:array(name) or map:value(name)
+  end
+  return unpack(ret)
+end
+
 return Function

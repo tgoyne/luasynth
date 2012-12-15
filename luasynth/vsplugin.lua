@@ -10,6 +10,7 @@ function VSPlugin:__index(fn_name)
       return Function(sig, self)
     end
   end
+  return VSPlugin[fn_name]
 end
 
 function VSPlugin:__tostring()
@@ -18,6 +19,20 @@ function VSPlugin:__tostring()
     ret = ret .. tostring(Function(fn, self))
   end
   return ret
+end
+
+function VSPlugin:registerFunction(name, arguments, fn)
+  local func = Function(name .. ";" .. arguments)
+  local function wrapper(argsIn, argsOut)
+    local succeeded, res = pcall(fn, func:unpack(argsIn))
+    if succeeded then
+      argsOut:set(res)
+    else
+      argsOut:setError(res)
+    end
+  end
+
+  vs.registerFunction(name, arguments, wrapper, nil, self)
 end
 
 ffi.metatype("VSPlugin", VSPlugin)

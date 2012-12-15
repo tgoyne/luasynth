@@ -42,6 +42,7 @@ function VSMap:numKeys()        return vs.propNumKeys(self) end
 function VSMap:key(index)       return vs.propGetKey(self, index - 1) end
 function VSMap:numElements(key) return vs.propNumElements(self, key) end
 function VSMap:deleteKey(key)   return vs.propDeleteKey(self, key) end
+function VSMap:setError(msg)    return vs.setError(self, msg) end
 
 function VSMap:setData(key, value, append)
     local err = vs.propSetData(self, key, value, value:len(), append)
@@ -89,17 +90,50 @@ local VSMapSet = {
   func  = VSMap.setFunc
 }
 
+local VSMapCdataType = {
+  [ffi.typeof("VSNodeRef")] = "node",
+  [ffi.typeof("VSFrameRef")] = "frame",
+  [ffi.typeof("VSFuncRef")] = "func"
+}
+
 local PROP_APPEND = vs:readEnum("pa").Append
 
-function VSMap:set(key, type, value)
+local function getVSType(value)
+  local ty = type(value)
+  if ty == "number" then
+    return "double"
+  elseif ty == "string" then
+    return "data"
+  elseif ty == "table" then
+    return getVSType(value[1]), true
+  elseif ty == "cdata" then
+    ty = ffi.typeof(value)
+    -- This looks dumb, but ctypes don't actually work as table keys due to not
+    -- being interned
+    for k, v in pairs(VSMapCdataType) do
+      if k == ty then
+        return v
+      end
+    end
+  end
+  error("Type not convertable to VS type: " .. ty)
+end
+
+function VSMap:set(key, ty, value)
   local arr
-  if type:sub(-2) == "[]" then
-    arr = true
-    type = type:sub(1, -3)
+  if not ty then
+    value = key
+    ty, arr = getVSType(value)
+    key = ty
   end
 
-  local setter = VSMapSet[type]
-  if not setter then error('Invalid data type: ' .. type, 2) end
+  if ty:sub(-2) == "[]" then
+    arr = true
+    ty = type:sub(1, -3)
+  end
+
+  local setter = VSMapSet[ty]
+  if not setter then error('Invalid data ty: ' .. type, 2) end
 
   if arr then
     for _, v in ipairs(value) do
