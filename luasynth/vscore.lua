@@ -3,12 +3,14 @@ local vs = require "luasynth.vsapi"
 local Function = require "luasynth.function"
 
 local VSCore = {
-  colorFamily    = vs:readEnum("cm"),
-  sampleType     = vs:readEnum("st"),
-  presetFormat   = vs:readEnum("pf"),
-  nodeFlags      = vs:readEnum("nf"),
-  getPropErrors  = vs:readEnum("pe"),
-  propAppendMode = vs:readEnum("pa")
+  colorFamily      = vs:readEnum("cm"),
+  sampleType       = vs:readEnum("st"),
+  presetFormat     = vs:readEnum("pf"),
+  nodeFlags        = vs:readEnum("nf"),
+  getPropErrors    = vs:readEnum("pe"),
+  propAppendMode   = vs:readEnum("pa"),
+  filterMode       = vs:readEnum("fm"),
+  activationReason = vs:readEnum("ar")
 }
 
 function VSCore:__gc() vs.freeCore(self) end

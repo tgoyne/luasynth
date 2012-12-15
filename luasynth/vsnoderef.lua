@@ -9,7 +9,11 @@ function VSNodeRef:__gc() vs.freeNode(self) end
 function VSNodeRef:clone() return vs.cloneNodeRef(self) end
 function VSNodeRef:videoInfo() return vs.getVideoInfo(self) end
 
-function VSNodeRef:frame(frameNum)
+function VSNodeRef:frame(frameNum, context)
+  if context then
+    return vs.getFrameFilter(frameNum - 1, self, context)
+  end
+
   local errbuf = ffi.new("char[512]")
   local frame = vs.getFrame(frameNum - 1, self, errbuf, 512)
   if frame == nil then
@@ -20,6 +24,10 @@ function VSNodeRef:frame(frameNum)
     end
   end
   return frame
+end
+
+function VSNodeRef:requestFrame(frameNum, context)
+  vs.requestFrameFilter(frameNum - 1, self, context)
 end
 
 function VSNodeRef:writeY4MHeader(file)

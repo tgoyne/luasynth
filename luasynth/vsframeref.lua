@@ -5,6 +5,7 @@ local VSFrameRef = {}
 VSFrameRef.__index = VSFrameRef
 
 function VSFrameRef:__gc() vs.freeFrame(self) end
+function VSFrameRef:release() return ffi.gc(self, nil) end
 function VSFrameRef:format()        return vs.getFrameFormat(self)                         end
 function VSFrameRef:props()         return vs.getFramePropsRW(self)                        end
 function VSFrameRef:width(plane)    return vs.getFrameWidth(self, self:checkPlane(plane))  end
