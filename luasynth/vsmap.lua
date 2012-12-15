@@ -19,8 +19,15 @@ local function map_setter(fn)
   end
 end
 
+local function get_int(fn)
+  local getter = map_getter(fn)
+  return function(self, key, index)
+    return tonumber(getter(self, key, index))
+  end
+end
+
 local VSMap = {
-  int      = map_getter(vs.propGetInt),
+  int      = get_int(vs.propGetInt),
   float    = map_getter(vs.propGetFloat),
   data     = map_getter(vs.propGetData),
   dataSize = map_getter(vs.propGetDataSize),
