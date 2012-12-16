@@ -66,7 +66,8 @@ local function packResult(name, argsIn, argsOut, succeeded, res, ...)
     return getFrame(frameNumber + 1, activationReason, frameCtx)
   end)
 
-  local freeHandle = ffi.cast("VSFilterFree", function()
+  local freeHandle
+  freeHandle = ffi.cast("VSFilterFree", function()
     if free then free() end
     initHandle:free()
     getFrameHandle:free()

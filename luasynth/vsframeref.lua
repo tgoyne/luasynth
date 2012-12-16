@@ -1,5 +1,6 @@
 local ffi = require "ffi"
 local vs = require "luasynth.vsapi"
+local vscore = require "luasynth.vscore"
 
 local VSFrameRef = {}
 VSFrameRef.__index = VSFrameRef
