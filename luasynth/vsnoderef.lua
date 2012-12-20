@@ -1,7 +1,9 @@
 local bit = require "bit"
 local ffi = require "ffi"
+local lanes = require "lanes"
 local core = require "luasynth.vscore"
 local vs = require "luasynth.vsapi"
+lanes.configure()
 
 local VSNodeRef = {}
 
@@ -55,6 +57,62 @@ function VSNodeRef:writeY4MHeader(file)
     y4mformat, info.width, info.height, tonumber(info.fpsNum), tonumber(info.fpsDen)))
 end
 
+local mq = lanes.linda()
+
+local function tovoidptr(ffi, cdata)
+  return tonumber(ffi.cast("intptr_t", cdata))
+end
+
+local function requestThread(getFrame, node)
+  local ffi = require "ffi"
+  local errbuf = ffi.new "char[512]"
+
+  ffi.cdef(require "luasynth.vapoursynth")
+
+  getFrame = ffi.cast("VSGetFrame", getFrame)
+  node = ffi.cast("VSNodeRef *", node)
+
+  local function get(frameNum)
+    local frame = getFrame(frameNum - 1, node, errbuf, 512)
+    if frame == nil then
+      if errbuf[0] ~= 0 then
+        return ffi.string(errbuf)
+      else
+        return "No error message given"
+      end
+    end
+
+    return tovoidptr(ffi, frame)
+  end
+
+  while true do
+    local k, frameNum = mq:receive "req"
+    if k ~= "req" then return end -- Error occured
+    if frameNum == 0 then return end
+
+    mq:send(nil, frameNum, get(frameNum))
+  end
+end
+
+local function writeFrame(file, frame)
+  if y4m then
+    file:write("FRAME\n")
+  end
+
+  local format = frame:format()
+  for plane = 1, format.numPlanes do
+    local pitch = frame:stride(plane)
+    local readPtr = frame:readPtr(plane)
+    local rowSize = frame:width(plane) * format.bytesPerSample
+    local height = frame:height(plane)
+
+    for y = 1, frame:height(plane) do
+      file:write(ffi.string(readPtr, rowSize))
+      readPtr = readPtr + pitch
+    end
+  end
+end
+
 function VSNodeRef:output(file, y4m, prefetch, progress_sink)
   if #self <= 0 then error('Cannot output unknown length clip') end
 
@@ -62,31 +120,29 @@ function VSNodeRef:output(file, y4m, prefetch, progress_sink)
   progress_sink = progress_sink or function() end
   progress_sink(0, #self)
 
+  local startThread = lanes.gen("*", requestThread)
+
   if y4m then
     self:writeY4MHeader(file)
   end
 
+  for i = 1, prefetch + 1 do
+    startThread(tovoidptr(ffi, vs.getFrame), tovoidptr(ffi, self))
+    mq:send("req", i)
+  end
+
   for i = 1, #self do
-    local frame = self[i]
-
-    if y4m then
-      file:write("FRAME\n")
+    local _, frame = mq:receive(nil, i)
+    if type(frame) == "string" then
+      error(string.format("Error fetching frame %d: %s", i, frame))
     end
 
-    local format = frame:format()
-    for plane = 1, format.numPlanes do
-      local pitch = frame:stride(plane)
-      local readPtr = frame:readPtr(plane)
-      local rowSize = frame:width(plane) * format.bytesPerSample
-      local height = frame:height(plane)
-
-      for y = 1, frame:height(plane) do
-        file:write(ffi.string(readPtr, rowSize))
-        readPtr = readPtr + pitch
-      end
-    end
-
+    writeFrame(file, ffi.cast("VSFrameRef *", frame))
     progress_sink(i, #self)
+
+    if i + prefetch < #self then
+      mq:send("req", i + prefetch + 1)
+    end
   end
 
   if y4m then
