@@ -21,8 +21,7 @@ function VSCore:newVideoFrame(format, width, height, propSrc)
 end
 
 function VSCore:__index(plugin_name)
-  if VSCore[plugin_name] then return VSCore[plugin_name] end
-  return vs.getPluginNs(plugin_name, self)
+  return VSCore[plugin_name] or vs.getPluginNs(plugin_name, self)
 end
 
 function VSCore:__tostring()
@@ -47,8 +46,6 @@ function VSCore:findFunction(fn_name)
   end
 end
 
-local core = vs.createCore(vapourSynthThreadCount or 0)
-
 ffi.metatype("VSCore", VSCore)
 
-return core
+return vs.createCore(vapourSynthThreadCount or 0)

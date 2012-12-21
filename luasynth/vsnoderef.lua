@@ -111,6 +111,8 @@ local function writeFrame(file, frame)
       readPtr = readPtr + pitch
     end
   end
+
+  vs.freeFrame(frame)
 end
 
 function VSNodeRef:output(file, y4m, prefetch, progress_sink)
@@ -127,7 +129,7 @@ function VSNodeRef:output(file, y4m, prefetch, progress_sink)
   end
 
   for i = 1, prefetch + 1 do
-    startThread(tovoidptr(ffi, vs.getFrame), tovoidptr(ffi, self))
+    startThread(vs:rawptr('getFrame'), tovoidptr(ffi, self))
     mq:send("req", i)
   end
 
