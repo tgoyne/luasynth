@@ -5,6 +5,10 @@ local core = require "luasynth.vscore"
 local vs = require "luasynth.vsapi"
 lanes.configure()
 
+ffi.cdef([[
+  size_t fwrite(const void *ptr, size_t size, size_t count, void *stream);
+]])
+
 local VSNodeRef = {}
 
 function VSNodeRef:__gc() vs.freeNode(self) end
@@ -107,7 +111,7 @@ local function writeFrame(file, frame)
     local height = frame:height(plane)
 
     for y = 1, frame:height(plane) do
-      file:write(ffi.string(readPtr, rowSize))
+      ffi.C.fwrite(readPtr, 1, rowSize, file)
       readPtr = readPtr + pitch
     end
   end
