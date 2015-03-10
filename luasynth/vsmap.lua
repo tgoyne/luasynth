@@ -136,7 +136,7 @@ function VSMap:set(key, ty, value)
 
   if ty:sub(-2) == "[]" then
     arr = true
-    ty = type:sub(1, -3)
+    ty = ty:sub(1, -3)
   end
 
   local setter = VSMapSet[ty]

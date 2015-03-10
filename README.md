@@ -8,10 +8,11 @@ will probably change a lot in the future if it continues to be developed.
 ## Installation
 
 1. Install LuaJIT
-2. Install VapourSynth
-3. Copy the VaopurSynth dynamic library to somewhere in LuaJIT's module search
+2. Install Lua Lanes
+3. Install VapourSynth
+4. Copy the VapourSynth dynamic library to somewhere in LuaJIT's module search
    path
-4. Copy LuaSynth to somewhere in LuaJIT's module search path
+5. Copy LuaSynth to somewhere in LuaJIT's module search path
 
 ## Usage
 
@@ -48,8 +49,7 @@ Then, to encode the script, run:
 
 ## Stuff still to be done
 
-1. Multithread VSNodeRef.output
-2. Add a way to register lua functions as VS functions
-3. Integrate with VS for the avifile magic
-4. Packaging and installation
-5. Probably a bunch of other little things
+1. Add a way to register lua functions as VS functions
+2. Integrate with VS for the avifile magic
+3. Packaging and installation
+4. Probably a bunch of other little things
