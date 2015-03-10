@@ -98,7 +98,7 @@ local function requestThread(getFrame, node)
   end
 end
 
-local function writeFrame(file, frame)
+local function writeFrame(file, frame, y4m)
   if y4m then
     file:write("FRAME\n")
   end
@@ -143,7 +143,7 @@ function VSNodeRef:output(file, y4m, prefetch, progress_sink)
       error(string.format("Error fetching frame %d: %s", i, frame))
     end
 
-    writeFrame(file, ffi.cast("VSFrameRef *", frame))
+    writeFrame(file, ffi.cast("VSFrameRef *", frame), y4m)
     progress_sink(i, #self)
 
     if i + prefetch < #self then
